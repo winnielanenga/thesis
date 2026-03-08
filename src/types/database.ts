@@ -15,7 +15,7 @@ export type CareerPath =
 export type Season = 'Fall' | 'Winter' | 'Spring' | 'Summer';
 
 export interface Profile {
-    id: string; // UUID
+    id: string; // Google OAuth 'sub' ID (TEXT, not UUID)
     full_name: string | null;
     graduation_year: number | null;
     career_path: CareerPath | null;
