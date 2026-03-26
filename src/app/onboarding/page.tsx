@@ -7,20 +7,32 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Sparkles, GraduationCap, Briefcase } from "lucide-react";
+import { Sparkles, GraduationCap, Briefcase, School } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default async function OnboardingPage() {
     const session = await auth();
     if (!session) redirect("/");
 
+    // If user already completed onboarding, redirect to dashboard
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('graduation_year, career_path')
+        .eq('id', session.user?.id)
+        .single();
+
+    if (profile?.graduation_year && profile?.career_path) {
+        redirect("/dashboard");
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-purple-50 dark:from-slate-950 dark:to-indigo-950 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-stone-50 to-violet-50 p-4">
             <Card className="w-full max-w-lg glass-card border-none shadow-2xl">
                 <CardHeader className="text-center space-y-2 pb-8">
-                    <div className="mx-auto w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-2 animate-bounce">
+                    <div className="mx-auto w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-2 animate-bounce">
                         <Sparkles className="h-6 w-6" />
                     </div>
-                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
                         Welcome, {session.user?.name?.split(" ")[0]}!
                     </CardTitle>
                     <CardDescription className="text-lg">
@@ -32,11 +44,11 @@ export default async function OnboardingPage() {
 
                         <div className="space-y-2">
                             <Label className="text-base font-semibold flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4 text-indigo-500" />
+                                <GraduationCap className="h-4 w-4 text-purple-500" />
                                 Graduation Year
                             </Label>
                             <Select name="graduationYear" required>
-                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-indigo-100 focus:ring-indigo-500">
+                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500">
                                     <SelectValue placeholder="Select Year" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -55,7 +67,7 @@ export default async function OnboardingPage() {
                                 Intended Career Path
                             </Label>
                             <Select name="careerPath" required>
-                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-indigo-100 focus:ring-indigo-500">
+                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500">
                                     <SelectValue placeholder="Choose your area of interest" />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-[300px]">
@@ -77,7 +89,23 @@ export default async function OnboardingPage() {
                             </p>
                         </div>
 
-                        <Button type="submit" size="lg" className="w-full text-base font-semibold h-12 rounded-xl shadow-lg shadow-indigo-500/20">
+                        <div className="space-y-2">
+                            <Label className="text-base font-semibold flex items-center gap-2">
+                                <School className="h-4 w-4 text-emerald-500" />
+                                Dream Colleges
+                                <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                            </Label>
+                            <Input
+                                name="dreamColleges"
+                                placeholder="e.g. MIT, Stanford, UCLA"
+                                className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500"
+                            />
+                            <p className="text-xs text-muted-foreground pt-1">
+                                Separate multiple schools with commas.
+                            </p>
+                        </div>
+
+                        <Button type="submit" size="lg" className="w-full text-base font-semibold h-12 rounded-xl shadow-lg shadow-purple-500/20">
                             Create My Roadmap
                         </Button>
                     </form>

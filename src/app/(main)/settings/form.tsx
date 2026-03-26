@@ -51,7 +51,7 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
                 Settings
             </h1>
 
@@ -59,13 +59,13 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
             <Card className="glass-card">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-indigo-500" />
+                        <Globe className="h-5 w-5 text-purple-500" />
                         Connected Accounts
                     </CardTitle>
                     <CardDescription>Manage your connections.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-xl bg-white/50 dark:bg-black/20">
+                    <div className="flex items-center justify-between p-4 border rounded-xl bg-white/50">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                                 <Mail className="h-5 w-5" />
@@ -107,9 +107,9 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
 
                     <div className="flex flex-wrap gap-2 pt-2">
                         {dreamColleges.map((school) => (
-                            <div key={school} className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-full text-sm font-medium animate-in fade-in zoom-in-95">
+                            <div key={school} className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-sm font-medium animate-in fade-in zoom-in-95">
                                 {school}
-                                <button onClick={() => handleRemoveCollege(school)} className="hover:text-indigo-900">
+                                <button onClick={() => handleRemoveCollege(school)} className="hover:text-purple-900">
                                     <Trash2 className="h-3.5 w-3.5" />
                                 </button>
                             </div>

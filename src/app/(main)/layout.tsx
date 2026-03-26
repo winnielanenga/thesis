@@ -26,14 +26,81 @@ export default async function MainLayout({
     // Fetch Graduation Year for Header
     // Note: session.user.id in NextAuth Google provider is the 'sub'. 
     // We used this 'sub' as the ID in our profiles table during onboarding.
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('graduation_year')
-        .eq('id', session.user.id)
-        .single();
+    const [{ data: profile }, { data: pendingMilestones }, { data: upcomingTasks }] = await Promise.all([
+        supabase
+            .from('profiles')
+            .select('graduation_year, career_path')
+            .eq('id', session.user.id)
+            .single(),
+        supabase
+            .from('user_milestones')
+            .select('template_id, status, milestone_template:milestone_templates(title, season, urgency_score)')
+            .eq('user_id', session.user.id)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: true })
+            .limit(10),
+        supabase
+            .from('tasks')
+            .select('id, title, date, completed')
+            .eq('user_id', session.user.id)
+            .eq('completed', false)
+            .gte('date', new Date().toISOString().split('T')[0])
+            .order('date', { ascending: true })
+            .limit(10),
+    ]);
 
-    // Fallback if not found (e.g. legacy user or onboarding skipped somehow) - default to current year + 4
-    const gradYear = profile?.graduation_year || new Date().getFullYear() + 4;
+    // Redirect to onboarding if profile is incomplete
+    if (!profile?.graduation_year || !profile?.career_path) {
+        redirect("/onboarding");
+    }
+
+    const gradYear = profile.graduation_year;
+
+    // Build notifications from real data
+    type Notification = { id: string; text: string; detail: string; type: 'milestone' | 'task' };
+    const notifications: Notification[] = [];
+
+    // Add critical milestones (urgency >= 9)
+    (pendingMilestones ?? []).forEach((m: any) => {
+        const template = m.milestone_template;
+        if (template?.urgency_score >= 9) {
+            notifications.push({
+                id: `milestone-${m.template_id}`,
+                text: template.title,
+                detail: `Critical ${template.season} milestone`,
+                type: 'milestone',
+            });
+        }
+    });
+
+    // Add upcoming tasks (within next 7 days)
+    const weekFromNow = new Date();
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    (upcomingTasks ?? []).forEach((t: any) => {
+        const taskDate = new Date(t.date + 'T00:00:00');
+        if (taskDate <= weekFromNow) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((taskDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const timeLabel = diffDays === 0 ? 'Due today' : diffDays === 1 ? 'Due tomorrow' : `Due in ${diffDays} days`;
+            notifications.push({
+                id: `task-${t.id}`,
+                text: t.title,
+                detail: timeLabel,
+                type: 'task',
+            });
+        }
+    });
+
+    // If no milestones seeded yet, add a nudge
+    if ((pendingMilestones ?? []).length === 0 && (upcomingTasks ?? []).length === 0) {
+        notifications.push({
+            id: 'welcome',
+            text: 'Welcome to ThesisPrep!',
+            detail: 'Check out your College Roadmap to get started.',
+            type: 'milestone',
+        });
+    }
 
     const navItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -45,12 +112,12 @@ export default async function MainLayout({
     ];
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="flex min-h-screen bg-stone-50">
             {/* Sidebar (Desktop) */}
-            <div className="hidden md:flex w-64 flex-col border-r bg-white dark:bg-black/40 backdrop-blur-md sticky top-0 h-screen">
+            <div className="hidden md:flex w-64 flex-col border-r bg-white backdrop-blur-md sticky top-0 h-screen">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                        Pathfinder
+                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+                        ThesisPrep
                     </h2>
                 </div>
 
@@ -59,7 +126,7 @@ export default async function MainLayout({
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white transition-all"
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-purple-50 hover:text-purple-600 transition-all"
                         >
                             <item.icon className="h-5 w-5" />
                             {item.name}
@@ -67,9 +134,9 @@ export default async function MainLayout({
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-indigo-100 dark:border-white/10 m-4 rounded-xl bg-indigo-50/50 dark:bg-white/5">
+                <div className="p-4 border-t border-purple-100 m-4 rounded-xl bg-purple-50/50">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold">
+                        <div className="h-10 w-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold">
                             {session.user?.name?.[0]}
                         </div>
                         <div className="overflow-hidden">
@@ -81,7 +148,7 @@ export default async function MainLayout({
                         "use server";
                         await signOut();
                     }}>
-                        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-red-500 hover:bg-red-50">
                             <LogOut className="h-4 w-4 mr-2" /> Sign Out
                         </Button>
                     </form>
@@ -90,7 +157,7 @@ export default async function MainLayout({
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
-                <Header graduationYear={gradYear} />
+                <Header graduationYear={gradYear} notifications={notifications} />
                 <main className="flex-1 overflow-auto">
                     {children}
                 </main>

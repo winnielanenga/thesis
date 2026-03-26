@@ -1,16 +1,33 @@
 
-"use client";
-
-import { useSession } from "next-auth/react";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Calendar, Brain } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, Brain, GraduationCap, Briefcase } from "lucide-react";
 import Link from "next/link";
 
-export default function DashboardPage() {
-    // Session is handled in layout for protection, but using hook here for name
-    // Note: Since this is a client component, we rely on SessionProvider or just prop drilling if we had it.
-    // For V3 MVP, we can assume layout protects us.
+export default async function DashboardPage() {
+    const session = await auth();
+    if (!session?.user?.id) redirect("/");
+
+    const [{ data: profile }, { count: pendingCount }] = await Promise.all([
+        supabase
+            .from('profiles')
+            .select('target_gpa, dream_colleges, career_path')
+            .eq('id', session.user.id)
+            .single(),
+        supabase
+            .from('user_milestones')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', session.user.id)
+            .eq('status', 'pending'),
+    ]);
+
+    const gpaGoal = profile?.target_gpa ?? 4.0;
+    const dreamColleges: string[] = profile?.dream_colleges ?? [];
+    const careerPath = profile?.career_path ?? "Undecided";
+    const milestoneCount = pendingCount ?? 0;
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto p-8">
@@ -31,8 +48,8 @@ export default function DashboardPage() {
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">4.0</div>
-                        <p className="text-xs text-muted-foreground">+0.2 from last term</p>
+                        <div className="text-2xl font-bold">{gpaGoal.toFixed(1)}</div>
+                        <p className="text-xs text-muted-foreground">Target GPA</p>
                     </CardContent>
                 </Card>
                 <Card className="glass-card">
@@ -41,20 +58,34 @@ export default function DashboardPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">3</div>
-                        <p className="text-xs text-muted-foreground">Due this month</p>
+                        <div className="text-2xl font-bold">{milestoneCount}</div>
+                        <p className="text-xs text-muted-foreground">Pending milestones</p>
                     </CardContent>
                 </Card>
                 <Card className="glass-card">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Study Streaks</CardTitle>
-                        <Brain className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">Career Path</CardTitle>
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">12h</div>
-                        <p className="text-xs text-muted-foreground">This week</p>
+                        <div className="text-lg font-bold leading-tight">{careerPath}</div>
                     </CardContent>
                 </Card>
+                {dreamColleges.length > 0 && (
+                    <Card className="glass-card">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Dream Schools</CardTitle>
+                            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-sm font-medium space-y-1">
+                                {dreamColleges.map((college) => (
+                                    <div key={college} className="truncate">{college}</div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -66,7 +97,7 @@ export default function DashboardPage() {
                         <Link href="/planner">
                             <Button variant="outline" className="w-full justify-between h-14 text-left">
                                 <span className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-indigo-500" />
+                                    <Calendar className="h-4 w-4 text-purple-500" />
                                     Review Roadmap
                                 </span>
                                 <ArrowRight className="h-4 w-4" />
