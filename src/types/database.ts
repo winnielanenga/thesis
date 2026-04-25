@@ -100,3 +100,29 @@ export interface Essay {
     notes: string | null;
     created_at: string;
 }
+
+export type ActivityCategory =
+    | 'Academic'
+    | 'Athletics'
+    | 'Arts'
+    | 'Community Service'
+    | 'Leadership / Government'
+    | 'Work / Internship'
+    | 'Religious / Cultural'
+    | 'Research / Science'
+    | 'Other';
+
+export interface Activity {
+    id: string;
+    user_id: string;
+    name: string;
+    organization: string | null;
+    role: string | null;
+    category: ActivityCategory;
+    description: string | null;
+    hours_per_week: number | null;
+    weeks_per_year: number | null;
+    grade_levels: (9 | 10 | 11 | 12)[];
+    continue_in_college: boolean;
+    created_at: string;
+}
