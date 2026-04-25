@@ -26,7 +26,7 @@ export default function StudyingPage() {
         <div className="space-y-8 max-w-6xl mx-auto p-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
                         Studying
                     </h1>
                     <p className="text-muted-foreground">Master your learning with proven techniques.</p>
@@ -34,7 +34,7 @@ export default function StudyingPage() {
 
                 {/* Timer Control */}
                 {!isTimerRunning ? (
-                    <Button onClick={() => setIsTimerRunning(true)} className="gap-2 rounded-full shadow-lg shadow-purple-500/20">
+                    <Button onClick={() => setIsTimerRunning(true)} className="gap-2 rounded-full shadow-lg shadow-primary/20">
                         <Clock className="h-4 w-4" /> Start Study Timer
                     </Button>
                 ) : (
@@ -55,14 +55,14 @@ export default function StudyingPage() {
                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="w-full bg-white/50 border border-purple-100 rounded-2xl p-6 flex items-center justify-between shadow-lg backdrop-blur-md"
+                        className="w-full bg-white/50 border border-border rounded-2xl p-6 flex items-center justify-between shadow-lg backdrop-blur-md"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="h-14 w-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center animate-pulse">
+                            <div className="h-14 w-14 rounded-full bg-primary/10 text-primary flex items-center justify-center animate-pulse">
                                 <Clock className="h-7 w-7" />
                             </div>
                             <div>
-                                <div className="font-bold text-xl text-purple-900">Session in Progress</div>
+                                <div className="font-bold text-xl text-foreground">Session in Progress</div>
                                 <div className="text-sm text-muted-foreground">Stay focused! You got this.</div>
                             </div>
                         </div>
@@ -143,8 +143,8 @@ function Section({ title, icon: Icon, children }: { title: string, icon: any, ch
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3 text-xl font-bold text-foreground/80">
-                <div className="p-2 bg-purple-50 rounded-lg">
-                    <Icon className="h-5 w-5 text-purple-600" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <Icon className="h-5 w-5 text-primary" />
                 </div>
                 {title}
             </div>

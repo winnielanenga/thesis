@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { addTask, toggleTask, deleteTask } from "./actions";
+import { useCelebration } from "@/hooks/use-celebration";
 
 type ViewMode = 'Yearly' | 'Monthly' | 'Weekly';
 
@@ -83,6 +84,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
     const [currentDate, setCurrentDate] = useState(defaultDate);
     const [showAddTask, setShowAddTask] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const { miniPop } = useCelebration();
 
     // Distribute milestones evenly across weeks of their season
     const distributedMilestones = useMemo(() => {
@@ -235,7 +237,9 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
         });
     };
 
-    const handleToggleTask = (taskId: string, completed: boolean) => {
+    const handleToggleTask = (taskId: string, completed: boolean, e?: React.MouseEvent) => {
+        // Mini pop when completing (not uncompleting) a task
+        if (!completed) miniPop(e);
         startTransition(() => toggleTask(taskId, !completed));
     };
 
@@ -298,8 +302,8 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                 <div
                                     key={`${year}-${monthIndex}`}
                                     className={cn(
-                                        "border rounded-xl p-3 bg-white/50 flex flex-col gap-2 hover:border-purple-300 transition-colors cursor-pointer",
-                                        isSameMonth(date, new Date()) && "border-purple-400 ring-1 ring-purple-400/30"
+                                        "border rounded-xl p-3 bg-white/50 flex flex-col gap-2 hover:border-primary/30 transition-colors cursor-pointer",
+                                        isSameMonth(date, new Date()) && "border-primary ring-1 ring-primary/30"
                                     )}
                                     onClick={() => { setCurrentDate(date); setViewMode('Monthly'); }}
                                 >
@@ -311,7 +315,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         {ms.length > 0 ? ms.slice(0, 4).map((m) => (
-                                            <div key={m.id} className="text-[10px] p-1.5 rounded bg-purple-50 text-purple-700 border border-purple-100 truncate">
+                                            <div key={m.id} className="text-[10px] p-1.5 rounded bg-primary/5 text-primary border border-primary/10 truncate">
                                                 {m.title}
                                             </div>
                                         )) : (
@@ -360,7 +364,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                         {/* Week label — clickable to drill into weekly view */}
                                         <button
                                             onClick={() => { setCurrentDate(weekStart); setViewMode('Weekly'); }}
-                                            className="flex flex-col items-center justify-center rounded-lg bg-secondary/30 hover:bg-purple-600/20 hover:text-purple-400 transition-colors p-2 text-center"
+                                            className="flex flex-col items-center justify-center rounded-lg bg-secondary/30 hover:bg-primary/10 hover:text-primary transition-colors p-2 text-center"
                                         >
                                             <span className="text-xs font-bold">Wk {hsWeek}</span>
                                             <span className="text-[10px] text-muted-foreground">{totalItems} {totalItems === 1 ? 'item' : 'items'}</span>
@@ -375,7 +379,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                                 <div key={day.toISOString()} className={cn(
                                                     "border rounded-lg p-1.5 bg-white/40 min-h-[70px]",
                                                     (!inMonth || beforeHs) && "opacity-20",
-                                                    isSameDay(day, new Date()) && "border-purple-400 ring-1 ring-purple-400/30"
+                                                    isSameDay(day, new Date()) && "border-primary ring-1 ring-primary/30"
                                                 )}>
                                                     <div className="text-right text-xs text-muted-foreground mb-1">{format(day, 'd')}</div>
                                                     {dayTasks.map(t => (
@@ -396,7 +400,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                         {weekMilestones.length > 0 && (
                                             <div className="col-start-1 col-span-8 flex gap-2 flex-wrap px-1 pb-2">
                                                 {weekMilestones.map(m => (
-                                                    <div key={m.id} className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
+                                                    <div key={m.id} className="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md bg-primary/5 text-primary border border-primary/10">
                                                         {m.urgency_score >= 9 && (
                                                             <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
                                                         )}
@@ -438,7 +442,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                         className={cn(
                                             "px-4 py-2 text-xs font-medium rounded-lg transition-all",
                                             isSameWeek(currentDate, w.weekStart)
-                                                ? "bg-purple-600 text-white shadow-md"
+                                                ? "bg-primary text-primary-foreground shadow-md"
                                                 : "bg-secondary/50 text-muted-foreground hover:text-foreground"
                                         )}
                                     >
@@ -455,7 +459,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                 {eachDayOfInterval({ start: startOfWeek(currentDate), end: endOfWeek(currentDate) }).map(day => (
                                     <div key={day.toISOString()} className={cn(
                                         "py-1 rounded-md",
-                                        isSameDay(day, new Date()) && "bg-purple-600/20 text-purple-400 font-bold"
+                                        isSameDay(day, new Date()) && "bg-primary/20 text-primary font-bold"
                                     )}>
                                         {format(day, 'EEE d')}
                                     </div>
@@ -466,12 +470,12 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                             <div className="flex-1 overflow-y-auto space-y-3">
                                 {/* Milestones */}
                                 {activeWeek?.milestones.map((m) => (
-                                    <Card key={m.id} className="glass-card hover:border-purple-300 transition-all">
+                                    <Card key={m.id} className="glass-card hover:border-primary/30 transition-all">
                                         <CardContent className="p-4">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/5 text-primary">
                                                             Milestone
                                                         </span>
                                                     </div>
@@ -480,7 +484,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                                 </div>
                                                 <div className="flex gap-2 shrink-0">
                                                     {m.season && (
-                                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/5 text-primary">
                                                             {m.season}
                                                         </span>
                                                     )}
@@ -502,7 +506,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="flex items-center gap-3">
                                                     <button
-                                                        onClick={() => handleToggleTask(t.id, t.completed)}
+                                                        onClick={(e) => handleToggleTask(t.id, t.completed, e)}
                                                         className={cn("transition-colors", t.completed ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500")}
                                                         disabled={isPending}
                                                     >
@@ -542,7 +546,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
 
                                 {/* Add task form */}
                                 {showAddTask ? (
-                                    <Card className="glass-card border-purple-300">
+                                    <Card className="glass-card border-primary/30">
                                         <CardContent className="p-4">
                                             <form action={handleAddTask} className="space-y-3">
                                                 <div className="flex items-center justify-between">
@@ -587,7 +591,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                                 ) : (
                                     <button
                                         onClick={() => setShowAddTask(true)}
-                                        className="w-full py-3 border-2 border-dashed border-muted-foreground/20 rounded-xl text-sm text-muted-foreground hover:border-purple-400 hover:text-purple-400 transition-colors flex items-center justify-center gap-2"
+                                        className="w-full py-3 border-2 border-dashed border-muted-foreground/20 rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
                                     >
                                         <Plus className="h-4 w-4" /> Add a task
                                     </button>

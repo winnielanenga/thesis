@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Circle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleMilestone } from "./actions";
+import { useCelebration } from "@/hooks/use-celebration";
 
 interface CollegeRoadmapProps {
     userPath: CareerPath;
@@ -27,6 +28,7 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
     const [activeGrade, setActiveGrade] = useState(getCurrentGrade(graduationYear));
     const [localMap, setLocalMap] = useState(completionMap);
     const [isPending, startTransition] = useTransition();
+    const { firework, sectionComplete } = useCelebration();
 
     const gradeMilestones = MILESTONES.filter(m =>
         m.grade_level === activeGrade &&
@@ -43,11 +45,22 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
         // Optimistic update
         setLocalMap(prev => ({ ...prev, [templateId]: next }));
 
+        // Celebrate completing a milestone
+        if (next === 'completed') {
+            // Check if this completion finishes the entire grade section
+            const newCompletedCount = completedCount + 1;
+            if (newCompletedCount === totalCount) {
+                sectionComplete();
+            } else {
+                firework();
+            }
+        }
+
         startTransition(async () => {
-            try {
-                await toggleMilestone(templateId, current);
-            } catch {
-                // Revert on error
+            const result = await toggleMilestone(templateId, current);
+            if (!result.ok) {
+                console.error("Milestone toggle failed:", result.error);
+                // Revert optimistic update
                 setLocalMap(prev => ({ ...prev, [templateId]: current }));
             }
         });
@@ -57,7 +70,7 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
         <div className="space-y-8 max-w-5xl mx-auto p-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
                         College Roadmap
                     </h1>
                     <p className="text-muted-foreground">
@@ -89,18 +102,18 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">{completedCount} of {totalCount} completed</span>
-                        <span className="font-medium text-purple-500">{Math.round((completedCount / totalCount) * 100)}%</span>
+                        <span className="font-medium text-primary">{Math.round((completedCount / totalCount) * 100)}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-secondary/50 overflow-hidden">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-purple-400 to-violet-500 transition-all duration-500"
+                            className="h-full rounded-full bg-gradient-to-r from-primary to-gold transition-all duration-500"
                             style={{ width: `${(completedCount / totalCount) * 100}%` }}
                         />
                     </div>
                 </div>
             )}
 
-            <div className="relative border-l-2 border-purple-100 ml-4 md:ml-8 pl-8 md:pl-12 py-4 space-y-8">
+            <div className="relative border-l-2 border-primary/10 ml-4 md:ml-8 pl-8 md:pl-12 py-4 space-y-8">
                 {gradeMilestones.map((m) => {
                     const status = localMap[m.id] ?? 'pending';
                     const isCompleted = status === 'completed';
@@ -110,12 +123,12 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
                             {/* Timeline Dot */}
                             <div className={cn(
                                 "absolute -left-[45px] md:-left-[61px] top-4 h-4 w-4 rounded-full ring-4 ring-white transition-colors",
-                                isCompleted ? "bg-emerald-500" : "bg-purple-500"
+                                isCompleted ? "bg-emerald-500" : "bg-primary"
                             )} />
 
                             <Card className={cn(
                                 "glass-card transition-all group",
-                                isCompleted ? "opacity-60 hover:opacity-80" : "hover:border-purple-300"
+                                isCompleted ? "opacity-60 hover:opacity-80" : "hover:border-primary/30"
                             )}>
                                 <CardContent className="p-4 flex items-start gap-4">
                                     <button
@@ -137,7 +150,7 @@ export function CollegeRoadmap({ userPath, completionMap, graduationYear }: Coll
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center gap-2">
                                             <h3 className={cn("font-bold text-lg", isCompleted && "line-through")}>{m.title}</h3>
-                                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
+                                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/5 text-primary">
                                                 {m.season}
                                             </span>
                                             {m.urgency_score && m.urgency_score >= 9 && (
