@@ -3,14 +3,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, ClipboardList } from "lucide-react";
+import { Bell, Calendar, ClipboardList, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Notification = {
     id: string;
     text: string;
     detail: string;
-    type: 'milestone' | 'task';
+    type: 'milestone' | 'task' | 'essay';
 };
 
 interface HeaderProps {
@@ -72,26 +72,30 @@ export function Header({ graduationYear, notifications = [] }: HeaderProps) {
                                     activeNotifications.map((n) => (
                                         <div
                                             key={n.id}
-                                            className="p-4 border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer bg-purple-50/30"
+                                            className="p-4 border-b last:border-0 hover:bg-muted transition-colors cursor-pointer bg-primary/5"
                                             onClick={() => setDismissed(prev => new Set([...prev, n.id]))}
                                         >
                                             <div className="flex items-start gap-3">
                                                 <div className={cn(
                                                     "mt-0.5 h-7 w-7 rounded-full flex items-center justify-center shrink-0",
                                                     n.type === 'milestone'
-                                                        ? "bg-purple-100 text-purple-600"
-                                                        : "bg-amber-100 text-amber-600"
+                                                        ? "bg-primary/10 text-primary"
+                                                        : n.type === 'essay'
+                                                            ? "bg-violet-100 text-violet-600"
+                                                            : "bg-amber-100 text-amber-600"
                                                 )}>
                                                     {n.type === 'milestone'
                                                         ? <ClipboardList className="h-3.5 w-3.5" />
-                                                        : <Calendar className="h-3.5 w-3.5" />
+                                                        : n.type === 'essay'
+                                                            ? <FileText className="h-3.5 w-3.5" />
+                                                            : <Calendar className="h-3.5 w-3.5" />
                                                     }
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-medium leading-tight">{n.text}</p>
                                                     <p className="text-xs text-muted-foreground mt-1">{n.detail}</p>
                                                 </div>
-                                                <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0 mt-1.5" />
+                                                <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />
                                             </div>
                                         </div>
                                     ))

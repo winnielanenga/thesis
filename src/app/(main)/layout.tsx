@@ -28,7 +28,17 @@ export default async function MainLayout({
     // Fetch Graduation Year for Header
     // Note: session.user.id in NextAuth Google provider is the 'sub'. 
     // We used this 'sub' as the ID in our profiles table during onboarding.
-    const [{ data: profile }, { data: pendingMilestones }, { data: upcomingTasks }] = await Promise.all([
+    const today = new Date().toISOString().split('T')[0];
+    const twoWeeksOut = new Date();
+    twoWeeksOut.setDate(twoWeeksOut.getDate() + 14);
+    const twoWeeksOutStr = twoWeeksOut.toISOString().split('T')[0];
+
+    const [
+        { data: profile },
+        { data: pendingMilestones },
+        { data: upcomingTasks },
+        { data: upcomingEssays },
+    ] = await Promise.all([
         supabase
             .from('profiles')
             .select('graduation_year, career_path')
@@ -46,8 +56,17 @@ export default async function MainLayout({
             .select('id, title, date, completed')
             .eq('user_id', session.user.id)
             .eq('completed', false)
-            .gte('date', new Date().toISOString().split('T')[0])
+            .gte('date', today)
             .order('date', { ascending: true })
+            .limit(10),
+        supabase
+            .from('essays')
+            .select('id, title, school, deadline, status')
+            .eq('user_id', session.user.id)
+            .neq('status', 'Submitted')
+            .not('deadline', 'is', null)
+            .lte('deadline', twoWeeksOutStr)
+            .order('deadline', { ascending: true })
             .limit(10),
     ]);
 
@@ -59,7 +78,7 @@ export default async function MainLayout({
     const gradYear = profile.graduation_year;
 
     // Build notifications from real data
-    type Notification = { id: string; text: string; detail: string; type: 'milestone' | 'task' };
+    type Notification = { id: string; text: string; detail: string; type: 'milestone' | 'task' | 'essay' };
     const notifications: Notification[] = [];
 
     // Add critical milestones (urgency >= 9)
@@ -81,9 +100,9 @@ export default async function MainLayout({
     (upcomingTasks ?? []).forEach((t: any) => {
         const taskDate = new Date(t.date + 'T00:00:00');
         if (taskDate <= weekFromNow) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const diffDays = Math.round((taskDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((taskDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
             const timeLabel = diffDays === 0 ? 'Due today' : diffDays === 1 ? 'Due tomorrow' : `Due in ${diffDays} days`;
             notifications.push({
                 id: `task-${t.id}`,
@@ -94,8 +113,29 @@ export default async function MainLayout({
         }
     });
 
+    // Add essay deadlines within 14 days
+    (upcomingEssays ?? []).forEach((e: any) => {
+        const dueDate = new Date(e.deadline + 'T00:00:00');
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((dueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+        const timeLabel = diffDays < 0
+            ? `Past due (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`
+            : diffDays === 0
+                ? 'Due today'
+                : diffDays === 1
+                    ? 'Due tomorrow'
+                    : `Due in ${diffDays} days`;
+        notifications.push({
+            id: `essay-${e.id}`,
+            text: e.title,
+            detail: e.school ? `${e.school} essay · ${timeLabel}` : `Essay · ${timeLabel}`,
+            type: 'essay',
+        });
+    });
+
     // If no milestones seeded yet, add a nudge
-    if ((pendingMilestones ?? []).length === 0 && (upcomingTasks ?? []).length === 0) {
+    if ((pendingMilestones ?? []).length === 0 && (upcomingTasks ?? []).length === 0 && (upcomingEssays ?? []).length === 0) {
         notifications.push({
             id: 'welcome',
             text: 'Welcome to ThesisPrep!',
