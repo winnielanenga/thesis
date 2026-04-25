@@ -160,7 +160,7 @@ export function EssaysView({ initialEssays, schoolSuggestions }: EssaysViewProps
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
-                        Essays
+                        College Essays
                     </h1>
                     <p className="text-muted-foreground">Track applications, prompts, and deadlines.</p>
                 </div>
@@ -228,7 +228,7 @@ export function EssaysView({ initialEssays, schoolSuggestions }: EssaysViewProps
                 <Card className="glass-card">
                     <CardContent className="p-12 text-center text-muted-foreground">
                         <FileText className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm">No essays tracked yet.</p>
+                        <p className="text-sm">No college essays tracked yet.</p>
                         <p className="text-xs mt-1">Click &ldquo;Add Essay&rdquo; to start tracking your application essays.</p>
                     </CardContent>
                 </Card>

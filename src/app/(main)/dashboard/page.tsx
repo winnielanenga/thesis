@@ -183,7 +183,7 @@ export default async function DashboardPage() {
                             <CardContent className="p-5">
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="text-xs uppercase tracking-wider opacity-80 flex items-center gap-1.5">
-                                        <CalendarClock className="h-3 w-3" /> Next Essay Deadline
+                                        <CalendarClock className="h-3 w-3" /> Next College Essay Deadline
                                     </div>
                                     <FileText className="h-4 w-4 opacity-60" />
                                 </div>
@@ -271,7 +271,7 @@ export default async function DashboardPage() {
                             <Button variant="outline" className="w-full justify-between h-14 text-left">
                                 <span className="flex items-center gap-2">
                                     <FileText className="h-4 w-4 text-violet-500" />
-                                    Track Essays
+                                    Track College Essays
                                 </span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>

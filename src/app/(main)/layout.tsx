@@ -152,7 +152,7 @@ export default async function MainLayout({
         { name: "Academics", href: "/academics", icon: BookOpen },
         { name: "Test Prep", href: "/test-prep", icon: BookCheck },
         { name: "College Prep", href: "/college-prep", icon: GraduationCap },
-        { name: "Essays", href: "/essays", icon: FileText },
+        { name: "College Essays", href: "/essays", icon: FileText },
         { name: "Rec Letters", href: "/recommendations", icon: MessageSquareQuote },
         { name: "Activities", href: "/activities", icon: Trophy },
         { name: "Studying", href: "/studying", icon: Brain },
