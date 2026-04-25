@@ -57,3 +57,29 @@ export interface Task {
     category: 'Academics' | 'Extracurricular' | 'College Prep' | 'Personal' | null;
     created_at: string;
 }
+
+export type CourseType = 'Regular' | 'Honors' | 'AP/IB';
+export type LetterGrade = 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-' | 'D' | 'F';
+export type TermSeason = 'Fall' | 'Winter' | 'Spring';
+
+export interface Course {
+    id: string;
+    user_id: string;
+    name: string;
+    type: CourseType;
+    grade: LetterGrade | null;
+    credits: number;
+    term_season: TermSeason;
+    term_year: number; // school-year start, e.g. 2025 = "2025-26"
+    grade_level: 9 | 10 | 11 | 12 | null;
+    created_at: string;
+}
+
+export interface Exam {
+    id: string;
+    user_id: string;
+    course_id: string;
+    exam_name: string;
+    date: string; // YYYY-MM-DD
+    created_at: string;
+}

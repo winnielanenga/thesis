@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Globe, GraduationCap, Mail, CheckCircle2, Trash2, Plus, Loader2, RefreshCw } from "lucide-react";
+import { Globe, GraduationCap, Mail, CheckCircle2, Trash2, Plus, Loader2, RefreshCw, Target } from "lucide-react";
 import { updateProfile, resetAccount } from "./actions";
 import { CareerPath, Profile } from "@/types/database";
 import { signIn } from "next-auth/react";
@@ -22,6 +22,24 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
     const [dreamColleges, setDreamColleges] = useState<string[]>(profile?.dream_colleges || []);
     const [newCollege, setNewCollege] = useState("");
     const [careerPath, setCareerPath] = useState<CareerPath>(profile?.career_path || "Undecided");
+    const [targetGpa, setTargetGpa] = useState<string>(
+        profile?.target_gpa != null ? String(profile.target_gpa) : ""
+    );
+
+    const handleTargetGpaBlur = () => {
+        const trimmed = targetGpa.trim();
+        if (trimmed === "") {
+            startTransition(() => updateProfile({ targetGpa: null }));
+            return;
+        }
+        const parsed = parseFloat(trimmed);
+        if (isNaN(parsed) || parsed < 0 || parsed > 5) {
+            // Reset to last known good value from profile
+            setTargetGpa(profile?.target_gpa != null ? String(profile.target_gpa) : "");
+            return;
+        }
+        startTransition(() => updateProfile({ targetGpa: parsed }));
+    };
 
     const handleAddCollege = () => {
         if (!newCollege.trim()) return;
@@ -51,7 +69,7 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
                 Settings
             </h1>
 
@@ -59,7 +77,7 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
             <Card className="glass-card">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-purple-500" />
+                        <Globe className="h-5 w-5 text-primary" />
                         Connected Accounts
                     </CardTitle>
                     <CardDescription>Manage your connections.</CardDescription>
@@ -86,7 +104,7 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
             <Card className="glass-card">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <GraduationCap className="h-5 w-5 text-purple-500" />
+                        <GraduationCap className="h-5 w-5 text-primary" />
                         Dream Schools
                     </CardTitle>
                     <CardDescription>Your target university list.</CardDescription>
@@ -107,9 +125,9 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
 
                     <div className="flex flex-wrap gap-2 pt-2">
                         {dreamColleges.map((school) => (
-                            <div key={school} className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-sm font-medium animate-in fade-in zoom-in-95">
+                            <div key={school} className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium animate-in fade-in zoom-in-95">
                                 {school}
-                                <button onClick={() => handleRemoveCollege(school)} className="hover:text-purple-900">
+                                <button onClick={() => handleRemoveCollege(school)} className="hover:text-foreground">
                                     <Trash2 className="h-3.5 w-3.5" />
                                 </button>
                             </div>
@@ -117,6 +135,37 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
                         {dreamColleges.length === 0 && (
                             <span className="text-sm text-muted-foreground italic">No dream schools added yet.</span>
                         )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Academic Goal */}
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-gold" />
+                        Academic Goal
+                    </CardTitle>
+                    <CardDescription>The weighted GPA you're aiming for. Shown on the Academics page.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-3">
+                        <Input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.1"
+                            value={targetGpa}
+                            onChange={(e) => setTargetGpa(e.target.value)}
+                            onBlur={handleTargetGpaBlur}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur();
+                            }}
+                            placeholder="e.g. 3.8"
+                            className="h-12 max-w-[140px] bg-white/50 backdrop-blur-sm text-lg font-semibold"
+                        />
+                        <span className="text-sm text-muted-foreground">/ 5.0 (weighted)</span>
+                        {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                     </div>
                 </CardContent>
             </Card>

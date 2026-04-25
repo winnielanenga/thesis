@@ -14,6 +14,7 @@ export async function completeOnboarding(formData: FormData) {
     const graduationYear = parseInt(formData.get("graduationYear") as string)
     const careerPath = formData.get("careerPath") as CareerPath
     const dreamCollegesRaw = formData.get("dreamColleges") as string | null
+    const targetGpaRaw = formData.get("targetGpa") as string | null
 
     if (!graduationYear || !careerPath) {
         throw new Error("Missing fields")
@@ -24,6 +25,15 @@ export async function completeOnboarding(formData: FormData) {
         ? dreamCollegesRaw.split(",").map(s => s.trim()).filter(Boolean)
         : []
 
+    // Parse target GPA: optional, 0-5, default 4.0 if blank
+    let targetGpa: number = 4.0
+    if (targetGpaRaw && targetGpaRaw.trim()) {
+        const parsed = parseFloat(targetGpaRaw)
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 5) {
+            targetGpa = parsed
+        }
+    }
+
     const userId = session.user.id
 
     const { error } = await supabase
@@ -33,7 +43,7 @@ export async function completeOnboarding(formData: FormData) {
             full_name: session.user.name,
             graduation_year: graduationYear,
             career_path: careerPath,
-            target_gpa: 4.0,
+            target_gpa: targetGpa,
             dream_colleges: dreamColleges.length > 0 ? dreamColleges : null,
         })
 

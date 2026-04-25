@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Sparkles, GraduationCap, Briefcase, School } from "lucide-react";
+import { Sparkles, GraduationCap, Briefcase, School, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default async function OnboardingPage() {
@@ -26,13 +26,13 @@ export default async function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-stone-50 to-violet-50 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-muted p-4">
             <Card className="w-full max-w-lg glass-card border-none shadow-2xl">
                 <CardHeader className="text-center space-y-2 pb-8">
-                    <div className="mx-auto w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-2 animate-bounce">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2 animate-bounce">
                         <Sparkles className="h-6 w-6" />
                     </div>
-                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
                         Welcome, {session.user?.name?.split(" ")[0]}!
                     </CardTitle>
                     <CardDescription className="text-lg">
@@ -44,15 +44,15 @@ export default async function OnboardingPage() {
 
                         <div className="space-y-2">
                             <Label className="text-base font-semibold flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4 text-purple-500" />
+                                <GraduationCap className="h-4 w-4 text-primary" />
                                 Graduation Year
                             </Label>
                             <Select name="graduationYear" required>
-                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500">
+                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-border focus:ring-primary">
                                     <SelectValue placeholder="Select Year" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {[2025, 2026, 2027, 2028, 2029, 2030].map((year) => (
+                                    {[2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035].map((year) => (
                                         <SelectItem key={year} value={year.toString()}>
                                             Class of {year}
                                         </SelectItem>
@@ -63,11 +63,11 @@ export default async function OnboardingPage() {
 
                         <div className="space-y-2">
                             <Label className="text-base font-semibold flex items-center gap-2">
-                                <Briefcase className="h-4 w-4 text-purple-500" />
+                                <Briefcase className="h-4 w-4 text-primary" />
                                 Intended Career Path
                             </Label>
                             <Select name="careerPath" required>
-                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500">
+                                <SelectTrigger className="h-12 bg-white/50 backdrop-blur-sm border-border focus:ring-primary">
                                     <SelectValue placeholder="Choose your area of interest" />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-[300px]">
@@ -98,14 +98,35 @@ export default async function OnboardingPage() {
                             <Input
                                 name="dreamColleges"
                                 placeholder="e.g. MIT, Stanford, UCLA"
-                                className="h-12 bg-white/50 backdrop-blur-sm border-purple-100 focus:ring-purple-500"
+                                className="h-12 bg-white/50 backdrop-blur-sm border-border focus:ring-primary"
                             />
                             <p className="text-xs text-muted-foreground pt-1">
                                 Separate multiple schools with commas.
                             </p>
                         </div>
 
-                        <Button type="submit" size="lg" className="w-full text-base font-semibold h-12 rounded-xl shadow-lg shadow-purple-500/20">
+                        <div className="space-y-2">
+                            <Label className="text-base font-semibold flex items-center gap-2">
+                                <Target className="h-4 w-4 text-gold" />
+                                Target GPA
+                                <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                            </Label>
+                            <Input
+                                name="targetGpa"
+                                type="number"
+                                min="0"
+                                max="5"
+                                step="0.1"
+                                placeholder="e.g. 3.8"
+                                defaultValue="4.0"
+                                className="h-12 bg-white/50 backdrop-blur-sm border-border focus:ring-primary"
+                            />
+                            <p className="text-xs text-muted-foreground pt-1">
+                                Your weighted GPA goal. You can change this anytime in Settings.
+                            </p>
+                        </div>
+
+                        <Button type="submit" size="lg" className="w-full text-base font-semibold h-12 rounded-xl shadow-lg shadow-primary/20">
                             Create My Roadmap
                         </Button>
                     </form>

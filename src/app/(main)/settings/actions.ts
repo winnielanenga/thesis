@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache"
 import { CareerPath } from "@/types/database"
 import { MILESTONES } from "@/data/milestones"
 
-export async function updateProfile(data: { careerPath?: CareerPath; dreamColleges?: string[] }) {
+export async function updateProfile(data: { careerPath?: CareerPath; dreamColleges?: string[]; targetGpa?: number | null }) {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
 
@@ -15,6 +15,12 @@ export async function updateProfile(data: { careerPath?: CareerPath; dreamColleg
     const updateData: any = {}
     if (data.careerPath) updateData.career_path = data.careerPath
     if (data.dreamColleges) updateData.dream_colleges = data.dreamColleges
+    if (data.targetGpa !== undefined) {
+        if (data.targetGpa !== null && (data.targetGpa < 0 || data.targetGpa > 5)) {
+            throw new Error("Target GPA must be between 0 and 5")
+        }
+        updateData.target_gpa = data.targetGpa
+    }
 
     const { error } = await supabase
         .from('profiles')
@@ -32,9 +38,10 @@ export async function updateProfile(data: { careerPath?: CareerPath; dreamColleg
     revalidatePath('/college-prep')
     revalidatePath('/planner')
     revalidatePath('/dashboard')
+    revalidatePath('/academics')
 }
 
-async function reseedMilestones(userId: string, careerPath: CareerPath) {
+export async function reseedMilestones(userId: string, careerPath: CareerPath) {
     // 1. Delete all existing user_milestones for this user
     const { error: deleteError } = await supabase
         .from('user_milestones')
