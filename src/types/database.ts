@@ -143,3 +143,19 @@ export interface Recommendation {
     notes: string | null;
     created_at: string;
 }
+
+export type TestType = 'SAT' | 'ACT' | 'PSAT' | 'AP' | 'Subject Test' | 'Other';
+
+export interface TestAttempt {
+    id: string;
+    user_id: string;
+    test_type: TestType;
+    test_name: string | null;     // e.g. "AP Calculus BC", "SAT Subject Test: Bio"
+    test_date: string;            // YYYY-MM-DD
+    registered: boolean;
+    total_score: number | null;
+    breakdown: string | null;     // freetext, e.g. "Math 720, EBRW 760"
+    goal_score: number | null;
+    notes: string | null;
+    created_at: string;
+}

@@ -12,7 +12,8 @@ import {
     Settings,
     FileText,
     Trophy,
-    MessageSquareQuote
+    MessageSquareQuote,
+    BookCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
@@ -149,6 +150,7 @@ export default async function MainLayout({
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { name: "Planner", href: "/planner", icon: Calendar },
         { name: "Academics", href: "/academics", icon: BookOpen },
+        { name: "Test Prep", href: "/test-prep", icon: BookCheck },
         { name: "College Prep", href: "/college-prep", icon: GraduationCap },
         { name: "Essays", href: "/essays", icon: FileText },
         { name: "Rec Letters", href: "/recommendations", icon: MessageSquareQuote },
