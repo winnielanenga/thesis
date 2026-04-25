@@ -83,3 +83,20 @@ export interface Exam {
     date: string; // YYYY-MM-DD
     created_at: string;
 }
+
+export type EssayType = 'Common App' | 'Supplemental' | 'Scholarship' | 'Other';
+export type EssayStatus = 'Not Started' | 'Drafting' | 'Reviewing' | 'Submitted';
+
+export interface Essay {
+    id: string;
+    user_id: string;
+    title: string;
+    school: string | null;
+    type: EssayType;
+    prompt: string | null;
+    word_limit: number | null;
+    status: EssayStatus;
+    deadline: string | null; // YYYY-MM-DD
+    notes: string | null;
+    created_at: string;
+}

@@ -9,7 +9,8 @@ import {
     GraduationCap,
     Brain,
     LogOut,
-    Settings
+    Settings,
+    FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
@@ -107,6 +108,7 @@ export default async function MainLayout({
         { name: "Planner", href: "/planner", icon: Calendar },
         { name: "Academics", href: "/academics", icon: BookOpen },
         { name: "College Prep", href: "/college-prep", icon: GraduationCap },
+        { name: "Essays", href: "/essays", icon: FileText },
         { name: "Studying", href: "/studying", icon: Brain },
         { name: "Settings", href: "/settings", icon: Settings },
     ];
@@ -116,7 +118,7 @@ export default async function MainLayout({
             {/* Sidebar (Desktop) */}
             <div className="hidden md:flex w-64 flex-col border-r bg-white backdrop-blur-md sticky top-0 h-screen">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-violet-500">
+                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
                         ThesisPrep
                     </h2>
                 </div>
@@ -126,7 +128,7 @@ export default async function MainLayout({
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-purple-50 hover:text-purple-600 transition-all"
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-accent hover:text-primary transition-all"
                         >
                             <item.icon className="h-5 w-5" />
                             {item.name}
@@ -134,9 +136,9 @@ export default async function MainLayout({
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-purple-100 m-4 rounded-xl bg-purple-50/50">
+                <div className="p-4 border-t border-border m-4 rounded-xl bg-muted/50">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold">
+                        <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold">
                             {session.user?.name?.[0]}
                         </div>
                         <div className="overflow-hidden">
@@ -148,7 +150,7 @@ export default async function MainLayout({
                         "use server";
                         await signOut();
                     }}>
-                        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-red-500 hover:bg-red-50">
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                             <LogOut className="h-4 w-4 mr-2" /> Sign Out
                         </Button>
                     </form>
