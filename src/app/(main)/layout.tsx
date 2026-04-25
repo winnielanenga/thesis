@@ -2,22 +2,11 @@
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-    LayoutDashboard,
-    Calendar,
-    BookOpen,
-    GraduationCap,
-    Brain,
-    LogOut,
-    Settings,
-    FileText,
-    Trophy,
-    MessageSquareQuote,
-    BookCheck
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { supabase } from "@/lib/supabase";
+import { NAV_ITEMS } from "@/lib/nav";
 
 export default async function MainLayout({
     children,
@@ -146,18 +135,7 @@ export default async function MainLayout({
         });
     }
 
-    const navItems = [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "Planner", href: "/planner", icon: Calendar },
-        { name: "Academics", href: "/academics", icon: BookOpen },
-        { name: "Test Prep", href: "/test-prep", icon: BookCheck },
-        { name: "College Prep", href: "/college-prep", icon: GraduationCap },
-        { name: "College Essays", href: "/essays", icon: FileText },
-        { name: "Rec Letters", href: "/recommendations", icon: MessageSquareQuote },
-        { name: "Activities", href: "/activities", icon: Trophy },
-        { name: "Studying", href: "/studying", icon: Brain },
-        { name: "Settings", href: "/settings", icon: Settings },
-    ];
+    const navItems = NAV_ITEMS;
 
     return (
         <div className="flex min-h-screen bg-stone-50">
@@ -205,7 +183,12 @@ export default async function MainLayout({
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
-                <Header graduationYear={gradYear} notifications={notifications} />
+                <Header
+                    graduationYear={gradYear}
+                    notifications={notifications}
+                    userName={session.user?.name}
+                    userEmail={session.user?.email}
+                />
                 <main className="flex-1 overflow-auto">
                     {children}
                 </main>

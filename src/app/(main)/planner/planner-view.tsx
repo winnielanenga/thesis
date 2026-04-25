@@ -255,7 +255,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
     };
 
     return (
-        <div className="space-y-6 h-full flex flex-col p-8">
+        <div className="space-y-6 h-full flex flex-col p-4 md:p-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>

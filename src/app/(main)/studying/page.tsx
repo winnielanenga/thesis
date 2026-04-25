@@ -23,7 +23,7 @@ export default function StudyingPage() {
     }, [isTimerRunning]);
 
     return (
-        <div className="space-y-8 max-w-6xl mx-auto p-8">
+        <div className="space-y-8 max-w-6xl mx-auto p-4 md:p-8">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-gold">
