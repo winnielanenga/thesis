@@ -126,3 +126,20 @@ export interface Activity {
     continue_in_college: boolean;
     created_at: string;
 }
+
+export type RecommenderType = 'Teacher' | 'Counselor' | 'Coach' | 'Employer' | 'Other';
+export type RecStatus = 'Not Asked' | 'Asked' | 'Confirmed' | 'Submitted' | 'Declined';
+
+export interface Recommendation {
+    id: string;
+    user_id: string;
+    recommender_name: string;
+    recommender_role: string | null;
+    email: string | null;
+    type: RecommenderType;
+    status: RecStatus;
+    requested_date: string | null; // YYYY-MM-DD
+    deadline: string | null;       // YYYY-MM-DD
+    notes: string | null;
+    created_at: string;
+}
