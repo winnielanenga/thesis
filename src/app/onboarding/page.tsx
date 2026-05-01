@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Sparkles, GraduationCap, Briefcase, School, Target } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getGraduationYearOptions } from "@/lib/utils";
 
 export default async function OnboardingPage() {
     const session = await auth();
@@ -52,7 +53,7 @@ export default async function OnboardingPage() {
                                     <SelectValue placeholder="Select Year" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {[2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035].map((year) => (
+                                    {getGraduationYearOptions().map((year) => (
                                         <SelectItem key={year} value={year.toString()}>
                                             Class of {year}
                                         </SelectItem>

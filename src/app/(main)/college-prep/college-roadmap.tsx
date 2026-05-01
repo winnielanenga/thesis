@@ -6,7 +6,7 @@ import { MILESTONES } from "@/data/milestones";
 import { CareerPath } from "@/types/database";
 import { Card, CardContent } from "@/components/ui/card";
 import { Circle, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getCurrentGrade } from "@/lib/utils";
 import { toggleMilestone } from "./actions";
 import { useCelebration } from "@/hooks/use-celebration";
 
@@ -14,14 +14,6 @@ interface CollegeRoadmapProps {
     userPath: CareerPath;
     completionMap: Record<string, 'pending' | 'completed'>;
     graduationYear: number;
-}
-
-function getCurrentGrade(graduationYear: number): 9 | 10 | 11 | 12 {
-    const now = new Date();
-    const academicStartYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
-    const hsStartYear = graduationYear - 4;
-    const grade = 9 + (academicStartYear - hsStartYear);
-    return Math.max(9, Math.min(12, grade)) as 9 | 10 | 11 | 12;
 }
 
 export function CollegeRoadmap({ userPath, completionMap, graduationYear }: CollegeRoadmapProps) {

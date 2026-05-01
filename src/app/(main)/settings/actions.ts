@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 import { CareerPath } from "@/types/database"
 import { MILESTONES } from "@/data/milestones"
+import { getCurrentGrade } from "@/lib/utils"
 
 export async function updateProfile(data: { careerPath?: CareerPath; dreamColleges?: string[]; targetGpa?: number | null }) {
     const session = await auth()
@@ -62,9 +63,7 @@ export async function reseedMilestones(userId: string, careerPath: CareerPath) {
 
     if (!profile?.graduation_year) return
 
-    const now = new Date()
-    const academicYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1
-    const currentGrade = Math.max(9, Math.min(12, 12 - (profile.graduation_year - academicYear - 1)))
+    const currentGrade = getCurrentGrade(profile.graduation_year)
 
     // 3. Filter milestones for the new career path
     const relevant = MILESTONES.filter(m => {

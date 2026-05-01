@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 import { CareerPath } from "@/types/database"
 import { MILESTONES } from "@/data/milestones"
+import { getAcademicYearStart, getCurrentGrade } from "@/lib/utils"
 
 export async function completeOnboarding(formData: FormData) {
     const session = await auth()
@@ -54,13 +55,7 @@ export async function completeOnboarding(formData: FormData) {
 
     // Seed milestones (non-fatal)
     try {
-        // Determine current academic year: if month >= August, academic year = calendar year, else calendar year - 1
-        const now = new Date()
-        const academicYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1
-
-        // Derive grade level: 12 - (graduationYear - academicYear - 1)
-        // e.g. grad 2028, academic year 2025 => 12 - (2028 - 2025 - 1) = 12 - 2 = 10
-        const currentGrade = Math.max(9, Math.min(12, 12 - (graduationYear - academicYear - 1)))
+        const currentGrade = getCurrentGrade(graduationYear)
 
         // Filter milestones: grade >= current grade AND (path_tags empty OR includes careerPath)
         const relevant = MILESTONES.filter(m => {
