@@ -21,6 +21,10 @@ export interface Profile {
     career_path: CareerPath | null;
     target_gpa: number | null;
     dream_colleges: string[] | null;
+    school_year_start_month: number; // 0-11
+    school_year_start_day: number;   // 1-31
+    school_year_end_month: number;   // 0-11
+    school_year_end_day: number;     // 1-31
     created_at: string;
 }
 

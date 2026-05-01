@@ -7,9 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Sparkles, GraduationCap, Briefcase, School, Target } from "lucide-react";
+import { Sparkles, GraduationCap, Briefcase, School, Target, CalendarRange } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getGraduationYearOptions } from "@/lib/utils";
+import { getGraduationYearOptions, getAcademicYearStart } from "@/lib/utils";
 
 export default async function OnboardingPage() {
     const session = await auth();
@@ -124,6 +124,38 @@ export default async function OnboardingPage() {
                             />
                             <p className="text-xs text-muted-foreground pt-1">
                                 Your weighted GPA goal. You can change this anytime in Settings.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-base font-semibold flex items-center gap-2">
+                                <CalendarRange className="h-4 w-4 text-primary" />
+                                Your School Year
+                            </Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <Label className="text-xs font-normal text-muted-foreground">Starts</Label>
+                                    <Input
+                                        name="schoolYearStart"
+                                        type="date"
+                                        defaultValue={`${getAcademicYearStart() + 1}-09-01`}
+                                        required
+                                        className="h-11 bg-white/50 backdrop-blur-sm border-border focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-xs font-normal text-muted-foreground">Ends</Label>
+                                    <Input
+                                        name="schoolYearEnd"
+                                        type="date"
+                                        defaultValue={`${getAcademicYearStart() + 2}-06-15`}
+                                        required
+                                        className="h-11 bg-white/50 backdrop-blur-sm border-border focus:ring-primary"
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground pt-1">
+                                Only the month and day matter — your school&apos;s typical first/last day. Editable later.
                             </p>
                         </div>
 

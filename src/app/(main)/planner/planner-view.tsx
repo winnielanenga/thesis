@@ -6,7 +6,7 @@ import {
     format, addMonths, subMonths, addWeeks, subWeeks, addDays,
     startOfWeek, endOfWeek, startOfMonth, endOfMonth,
     eachDayOfInterval, eachWeekOfInterval,
-    isSameMonth, isSameDay, isSameWeek, isBefore, isWithinInterval,
+    isSameMonth, isSameDay, isSameWeek, isBefore, isAfter, isWithinInterval,
 } from "date-fns";
 import { MILESTONES } from "@/data/milestones";
 import { CareerPath, Season, Task } from "@/types/database";
@@ -68,18 +68,35 @@ interface PlannerViewProps {
     graduationYear: number;
     careerPath: CareerPath;
     tasks: Task[];
+    schoolYearStartMonth: number; // 0-11
+    schoolYearStartDay: number;   // 1-31
+    schoolYearEndMonth: number;   // 0-11
+    schoolYearEndDay: number;     // 1-31
 }
 
-export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewProps) {
+export function PlannerView({
+    graduationYear, careerPath, tasks,
+    schoolYearStartMonth, schoolYearStartDay,
+    schoolYearEndMonth, schoolYearEndDay,
+}: PlannerViewProps) {
     const hsStartYear = graduationYear - 4;
-    const hsStartDate = new Date(hsStartYear, 8, 1);
+    const hsStartDate = new Date(hsStartYear, schoolYearStartMonth, schoolYearStartDay);
     const hsStartWeek = startOfWeek(hsStartDate);
+    // Senior year ends in the calendar year of graduation
+    const hsEndDate = new Date(graduationYear, schoolYearEndMonth, schoolYearEndDay);
+    const hsEndWeek = endOfWeek(hsEndDate);
 
     const now = new Date();
-    const currentAcademicStartYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+    // Decide which academic year today falls in, using the user's actual start date
+    // (not just a generic August cutoff). If we're past this calendar year's start, the
+    // academic year started this year; otherwise it started last year.
+    const thisYearStart = new Date(now.getFullYear(), schoolYearStartMonth, schoolYearStartDay);
+    const currentAcademicStartYear = now >= thisYearStart ? now.getFullYear() : now.getFullYear() - 1;
     const currentGrade = Math.max(9, Math.min(12, 9 + (currentAcademicStartYear - hsStartYear)));
 
-    const defaultDate = isBefore(now, hsStartDate) ? hsStartDate : new Date(currentAcademicStartYear, 8, 1);
+    const defaultDate = isBefore(now, hsStartDate)
+        ? hsStartDate
+        : new Date(currentAcademicStartYear, schoolYearStartMonth, schoolYearStartDay);
     const [viewMode, setViewMode] = useState<ViewMode>('Monthly');
     const [currentDate, setCurrentDate] = useState(defaultDate);
     const [showAddTask, setShowAddTask] = useState(false);
@@ -181,9 +198,11 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
         if (!isBefore(candidate, hsStartWeek)) setCurrentDate(candidate);
     };
     const handleNext = () => {
-        setCurrentDate(getStep('next'));
+        const candidate = getStep('next');
+        if (!isAfter(candidate, hsEndWeek)) setCurrentDate(candidate);
     };
     const canGoPrev = !isBefore(getStep('prev'), hsStartWeek);
+    const canGoNext = !isAfter(getStep('next'), hsEndWeek);
 
     // HS week number
     const getHsWeekNumber = (date: Date) => {
@@ -212,20 +231,24 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
         });
     };
 
-    // Yearly academic months
+    // Yearly academic months — first month is whatever the user said school starts
     const getViewedAcademicStartYear = () => {
-        return currentDate.getMonth() >= 8 ? currentDate.getFullYear() : currentDate.getFullYear() - 1;
+        return currentDate.getMonth() >= schoolYearStartMonth
+            ? currentDate.getFullYear()
+            : currentDate.getFullYear() - 1;
     };
 
     const academicMonths = useMemo(() => {
-        const viewedAcadYear = currentDate.getMonth() >= 8 ? currentDate.getFullYear() : currentDate.getFullYear() - 1;
+        const viewedAcadYear = currentDate.getMonth() >= schoolYearStartMonth
+            ? currentDate.getFullYear()
+            : currentDate.getFullYear() - 1;
         const acadYear = Math.max(viewedAcadYear, hsStartYear);
         return Array.from({ length: 12 }).map((_, i) => {
-            const monthIndex = (8 + i) % 12;
-            const year = monthIndex >= 8 ? acadYear : acadYear + 1;
+            const monthIndex = (schoolYearStartMonth + i) % 12;
+            const year = monthIndex >= schoolYearStartMonth ? acadYear : acadYear + 1;
             return { monthIndex, year, date: new Date(year, monthIndex, 1) };
         });
-    }, [currentDate, hsStartYear]);
+    }, [currentDate, hsStartYear, schoolYearStartMonth]);
 
     const viewedGrade = Math.max(9, Math.min(12, 9 + (getViewedAcademicStartYear() - hsStartYear)));
 
@@ -283,7 +306,7 @@ export function PlannerView({ graduationYear, careerPath, tasks }: PlannerViewPr
                             : format(currentDate, 'MMMM yyyy')
                         }
                     </div>
-                    <Button variant="outline" size="icon" onClick={handleNext}>
+                    <Button variant="outline" size="icon" onClick={handleNext} disabled={!canGoNext}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>

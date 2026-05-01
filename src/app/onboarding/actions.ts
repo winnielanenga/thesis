@@ -16,6 +16,8 @@ export async function completeOnboarding(formData: FormData) {
     const careerPath = formData.get("careerPath") as CareerPath
     const dreamCollegesRaw = formData.get("dreamColleges") as string | null
     const targetGpaRaw = formData.get("targetGpa") as string | null
+    const schoolYearStartRaw = formData.get("schoolYearStart") as string | null
+    const schoolYearEndRaw = formData.get("schoolYearEnd") as string | null
 
     if (!graduationYear || !careerPath) {
         throw new Error("Missing fields")
@@ -35,6 +37,20 @@ export async function completeOnboarding(formData: FormData) {
         }
     }
 
+    // Parse school year start/end. Year part is irrelevant — we only persist
+    // month and day. Defaults: Sept 1 -> June 15 (typical US school year).
+    const parseMonthDay = (raw: string | null, fallbackMonth: number, fallbackDay: number) => {
+        if (!raw) return { month: fallbackMonth, day: fallbackDay }
+        // Form date format is YYYY-MM-DD; parse without timezone games
+        const [, m, d] = raw.split("-").map(Number)
+        if (!m || !d || m < 1 || m > 12 || d < 1 || d > 31) {
+            return { month: fallbackMonth, day: fallbackDay }
+        }
+        return { month: m - 1, day: d } // store month 0-11
+    }
+    const start = parseMonthDay(schoolYearStartRaw, 8, 1)
+    const end = parseMonthDay(schoolYearEndRaw, 5, 15)
+
     const userId = session.user.id
 
     const { error } = await supabase
@@ -46,6 +62,10 @@ export async function completeOnboarding(formData: FormData) {
             career_path: careerPath,
             target_gpa: targetGpa,
             dream_colleges: dreamColleges.length > 0 ? dreamColleges : null,
+            school_year_start_month: start.month,
+            school_year_start_day: start.day,
+            school_year_end_month: end.month,
+            school_year_end_day: end.day,
         })
 
     if (error) {

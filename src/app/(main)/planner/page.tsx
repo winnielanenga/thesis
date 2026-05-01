@@ -12,7 +12,7 @@ export default async function PlannerPage() {
     const [{ data: profile }, { data: tasks }] = await Promise.all([
         supabase
             .from('profiles')
-            .select('graduation_year, career_path')
+            .select('graduation_year, career_path, school_year_start_month, school_year_start_day, school_year_end_month, school_year_end_day')
             .eq('id', session.user.id)
             .single(),
         supabase
@@ -27,6 +27,10 @@ export default async function PlannerPage() {
             graduationYear={profile?.graduation_year ?? new Date().getFullYear() + 4}
             careerPath={(profile?.career_path ?? "Undecided") as CareerPath}
             tasks={(tasks ?? []) as Task[]}
+            schoolYearStartMonth={profile?.school_year_start_month ?? 8}
+            schoolYearStartDay={profile?.school_year_start_day ?? 1}
+            schoolYearEndMonth={profile?.school_year_end_month ?? 5}
+            schoolYearEndDay={profile?.school_year_end_day ?? 15}
         />
     );
 }

@@ -8,7 +8,12 @@ import { CareerPath } from "@/types/database"
 import { MILESTONES } from "@/data/milestones"
 import { getCurrentGrade } from "@/lib/utils"
 
-export async function updateProfile(data: { careerPath?: CareerPath; dreamColleges?: string[]; targetGpa?: number | null }) {
+export async function updateProfile(data: {
+    careerPath?: CareerPath;
+    dreamColleges?: string[];
+    targetGpa?: number | null;
+    schoolYear?: { startMonth: number; startDay: number; endMonth: number; endDay: number };
+}) {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
 
@@ -21,6 +26,19 @@ export async function updateProfile(data: { careerPath?: CareerPath; dreamColleg
             throw new Error("Target GPA must be between 0 and 5")
         }
         updateData.target_gpa = data.targetGpa
+    }
+    if (data.schoolYear) {
+        const { startMonth, startDay, endMonth, endDay } = data.schoolYear
+        if (startMonth < 0 || startMonth > 11 || endMonth < 0 || endMonth > 11) {
+            throw new Error("School year months must be 0-11")
+        }
+        if (startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31) {
+            throw new Error("School year days must be 1-31")
+        }
+        updateData.school_year_start_month = startMonth
+        updateData.school_year_start_day = startDay
+        updateData.school_year_end_month = endMonth
+        updateData.school_year_end_day = endDay
     }
 
     const { error } = await supabase
@@ -40,6 +58,7 @@ export async function updateProfile(data: { careerPath?: CareerPath; dreamColleg
     revalidatePath('/planner')
     revalidatePath('/dashboard')
     revalidatePath('/academics')
+    revalidatePath('/onboarding')
 }
 
 export async function reseedMilestones(userId: string, careerPath: CareerPath) {

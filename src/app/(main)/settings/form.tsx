@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Globe, GraduationCap, Mail, CheckCircle2, Trash2, Plus, Loader2, RefreshCw, Target } from "lucide-react";
+import { Globe, GraduationCap, Mail, CheckCircle2, Trash2, Plus, Loader2, RefreshCw, Target, CalendarRange } from "lucide-react";
 import { updateProfile, resetAccount } from "./actions";
 import { CareerPath, Profile } from "@/types/database";
 import { signIn } from "next-auth/react";
@@ -25,6 +25,36 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
     const [targetGpa, setTargetGpa] = useState<string>(
         profile?.target_gpa != null ? String(profile.target_gpa) : ""
     );
+
+    // School year start/end dates as YYYY-MM-DD strings, with year fixed to a
+    // dummy reference. Only the month + day are persisted on save.
+    const monthDayToInputValue = (month: number | null | undefined, day: number | null | undefined, fallbackMonth: number, fallbackDay: number) => {
+        const m = (month ?? fallbackMonth) + 1; // 0-11 -> 1-12
+        const d = day ?? fallbackDay;
+        return `2000-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    };
+    const [schoolYearStart, setSchoolYearStart] = useState<string>(
+        monthDayToInputValue(profile?.school_year_start_month, profile?.school_year_start_day, 8, 1)
+    );
+    const [schoolYearEnd, setSchoolYearEnd] = useState<string>(
+        monthDayToInputValue(profile?.school_year_end_month, profile?.school_year_end_day, 5, 15)
+    );
+
+    const handleSchoolYearChange = (newStart: string, newEnd: string) => {
+        setSchoolYearStart(newStart);
+        setSchoolYearEnd(newEnd);
+        const [, sm, sd] = newStart.split('-').map(Number);
+        const [, em, ed] = newEnd.split('-').map(Number);
+        if (!sm || !sd || !em || !ed) return;
+        startTransition(() => updateProfile({
+            schoolYear: {
+                startMonth: sm - 1,
+                startDay: sd,
+                endMonth: em - 1,
+                endDay: ed,
+            },
+        }));
+    };
 
     const handleTargetGpaBlur = () => {
         const trimmed = targetGpa.trim();
@@ -167,6 +197,42 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
                         <span className="text-sm text-muted-foreground">/ 5.0 (weighted)</span>
                         {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* School Year */}
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CalendarRange className="h-5 w-5 text-primary" />
+                        School Year
+                    </CardTitle>
+                    <CardDescription>The first and last day of your school year. Used by the Planner.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+                        <div>
+                            <label className="text-xs font-semibold text-muted-foreground">Starts</label>
+                            <Input
+                                type="date"
+                                value={schoolYearStart}
+                                onChange={(e) => handleSchoolYearChange(e.target.value, schoolYearEnd)}
+                                className="mt-1 bg-white/50 backdrop-blur-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs font-semibold text-muted-foreground">Ends</label>
+                            <Input
+                                type="date"
+                                value={schoolYearEnd}
+                                onChange={(e) => handleSchoolYearChange(schoolYearStart, e.target.value)}
+                                className="mt-1 bg-white/50 backdrop-blur-sm"
+                            />
+                        </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Only the month and day are saved &mdash; the year on the picker is just a placeholder.
+                    </p>
                 </CardContent>
             </Card>
 
