@@ -358,10 +358,15 @@ export function PlannerView({
                 {viewMode === 'Monthly' && (() => {
                     const monthStart = startOfMonth(currentDate);
                     const monthEnd = endOfMonth(currentDate);
-                    const weeks = eachWeekOfInterval({ start: monthStart, end: monthEnd });
+                    // Build weeks explicitly: from the Sunday on/before the 1st of the
+                    // month, through the Sunday on/before the last of the month. Not
+                    // using eachWeekOfInterval because it can yield off-by-one results.
+                    const weeks: Date[] = [];
+                    for (let w = startOfWeek(monthStart); w <= startOfWeek(monthEnd); w = addWeeks(w, 1)) {
+                        weeks.push(w);
+                    }
                     // Don't filter out weeks before HS — per-day greying below handles
-                    // pre-HS visually, and filtering broke months that span the start
-                    // of HS (e.g. Aug if school starts Aug 31, only 1 of 6 weeks shown).
+                    // pre-HS visually.
 
                     return (
                         <div className="h-full flex flex-col gap-4 overflow-y-auto">
@@ -380,7 +385,7 @@ export function PlannerView({
                                 const totalItems = weekMilestones.length + weekTasks.length;
 
                                 return (
-                                    <div key={hsWeek} className="grid grid-cols-[100px_repeat(7,1fr)] gap-1">
+                                    <div key={weekStart.toISOString()} className="grid grid-cols-[100px_repeat(7,1fr)] gap-1">
                                         {/* Week label — clickable to drill into weekly view */}
                                         <button
                                             onClick={() => { setCurrentDate(weekStart); setViewMode('Weekly'); }}
