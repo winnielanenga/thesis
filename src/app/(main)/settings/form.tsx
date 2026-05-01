@@ -310,7 +310,7 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
                             <div className="flex gap-2">
                                 <Button
                                     variant="destructive"
-                                    disabled={deleteText !== "delete my account" || isDeleting}
+                                    disabled={deleteText.trim().toLowerCase() !== "delete my account" || isDeleting}
                                     onClick={handleDeleteAccount}
                                 >
                                     {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
