@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { supabase } from "@/lib/supabase";
 import { NAV_ITEMS } from "@/lib/nav";
+import { getCurrentGrade, getCurrentSeason } from "@/lib/utils";
 
 export default async function MainLayout({
     children,
@@ -37,7 +38,7 @@ export default async function MainLayout({
             .single(),
         supabase
             .from('user_milestones')
-            .select('template_id, status, milestone_template:milestone_templates(title, season, urgency_score)')
+            .select('template_id, status, milestone_template:milestone_templates(title, season, urgency_score, grade_level)')
             .eq('user_id', session.user.id)
             .eq('status', 'pending')
             .order('created_at', { ascending: true })
@@ -72,10 +73,16 @@ export default async function MainLayout({
     type Notification = { id: string; text: string; detail: string; type: 'milestone' | 'task' | 'essay' };
     const notifications: Notification[] = [];
 
-    // Add critical milestones (urgency >= 9)
+    // Add critical milestones for the current grade + season only
+    const currentGrade = getCurrentGrade(gradYear);
+    const currentSeason = getCurrentSeason();
     (pendingMilestones ?? []).forEach((m: any) => {
         const template = m.milestone_template;
-        if (template?.urgency_score >= 9) {
+        if (
+            template?.urgency_score >= 9 &&
+            template?.grade_level === currentGrade &&
+            template?.season === currentSeason
+        ) {
             notifications.push({
                 id: `milestone-${m.template_id}`,
                 text: template.title,
