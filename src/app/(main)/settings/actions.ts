@@ -147,14 +147,23 @@ export async function reseedMilestones(userId: string, careerPath: CareerPath) {
     }
 }
 
-export async function resetAccount() {
+export async function deleteAccount() {
     const session = await auth()
     if (!session?.user?.id) throw new Error("Unauthorized")
 
     const userId = session.user.id
 
-    await supabase.from('user_milestones').delete().eq('user_id', userId)
-    await supabase.from('tasks').delete().eq('user_id', userId)
+    // Delete from child tables first (FK order matters for exams -> courses)
+    await Promise.all([
+        supabase.from('user_milestones').delete().eq('user_id', userId),
+        supabase.from('tasks').delete().eq('user_id', userId),
+        supabase.from('exams').delete().eq('user_id', userId),
+        supabase.from('essays').delete().eq('user_id', userId),
+        supabase.from('activities').delete().eq('user_id', userId),
+        supabase.from('recommendations').delete().eq('user_id', userId),
+        supabase.from('test_attempts').delete().eq('user_id', userId),
+    ])
+    await supabase.from('courses').delete().eq('user_id', userId)
     await supabase.from('profiles').delete().eq('id', userId)
 
     return { success: true }

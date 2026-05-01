@@ -13,7 +13,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Globe, GraduationCap, Mail, CheckCircle2, Trash2, Plus, Loader2, RefreshCw, Target, CalendarRange } from "lucide-react";
-import { updateProfile, resetAccount } from "./actions";
+import { updateProfile, deleteAccount } from "./actions";
 import { CareerPath, Profile } from "@/types/database";
 import { signIn } from "next-auth/react";
 
@@ -90,10 +90,18 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
         startTransition(() => updateProfile({ careerPath: path }));
     };
 
-    const handleReset = async () => {
-        if (confirm("Are you sure? This will wipe ALL your data permanently.")) {
-            await resetAccount();
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteText, setDeleteText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteAccount = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteAccount();
+            localStorage.removeItem('thesisprep-dismissed-notifications');
             window.location.href = "/";
+        } catch {
+            setIsDeleting(false);
         }
     };
 
@@ -268,11 +276,58 @@ export function SettingsForm({ profile, userEmail }: { profile: any, userEmail?:
             </Card>
 
             {/* Danger Zone */}
-            <div className="flex justify-end pt-4">
-                <Button variant="destructive" onClick={handleReset} className="gap-2 bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white border border-red-200">
-                    <Trash2 className="h-4 w-4" /> Reset Account Data
-                </Button>
-            </div>
+            <Card className="border-red-200 bg-red-50/30">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                        <Trash2 className="h-5 w-5" />
+                        Delete Account
+                    </CardTitle>
+                    <CardDescription>
+                        Permanently delete your account and all associated data. This cannot be undone.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {!showDeleteConfirm ? (
+                        <Button
+                            variant="destructive"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="gap-2"
+                        >
+                            <Trash2 className="h-4 w-4" /> Delete My Account
+                        </Button>
+                    ) : (
+                        <div className="space-y-3 p-4 border border-red-200 rounded-xl bg-white">
+                            <p className="text-sm font-medium text-red-700">
+                                Type <span className="font-mono font-bold">delete my account</span> to confirm:
+                            </p>
+                            <Input
+                                value={deleteText}
+                                onChange={(e) => setDeleteText(e.target.value)}
+                                placeholder="delete my account"
+                                className="border-red-200 focus-visible:ring-red-400"
+                                autoFocus
+                            />
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="destructive"
+                                    disabled={deleteText !== "delete my account" || isDeleting}
+                                    onClick={handleDeleteAccount}
+                                >
+                                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                                    {isDeleting ? "Deleting..." : "Permanently Delete"}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => { setShowDeleteConfirm(false); setDeleteText(""); }}
+                                    disabled={isDeleting}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }
