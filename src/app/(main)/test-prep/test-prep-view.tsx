@@ -15,7 +15,7 @@ import {
     Plus, X, Pencil, Loader2, CalendarClock, Trophy, BarChart3, Target, BookCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { differenceInDays, format, isPast, isToday } from "date-fns";
+import { differenceInDays, format, isToday } from "date-fns";
 import { TestAttempt, TestType } from "@/types/database";
 import {
     addTestAttempt, updateTestAttempt, deleteTestAttempt, TestAttemptInput,
@@ -55,8 +55,12 @@ export function TestPrepView({ initialAttempts }: { initialAttempts: TestAttempt
         });
     };
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Memoize today's midnight so useMemo deps below stay stable across renders
+    const today = useMemo(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, []);
 
     const upcoming = useMemo(
         () => attempts
@@ -603,7 +607,7 @@ function TestAttemptForm({
                                 onCheckedChange={(v) => setRegistered(v === true)}
                             />
                             <label htmlFor="registered" className="text-sm cursor-pointer">
-                                I'm registered for this test
+                                I&apos;m registered for this test
                             </label>
                         </div>
                         <div className="md:col-span-2">

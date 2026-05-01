@@ -20,6 +20,7 @@ export function CurrentDate() {
 
     useEffect(() => {
         // Re-render once mounted so the client timezone replaces the server's.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDate(format(new Date()));
 
         let timeoutId: ReturnType<typeof setTimeout>;

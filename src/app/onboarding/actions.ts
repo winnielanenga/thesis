@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 import { CareerPath } from "@/types/database"
 import { MILESTONES } from "@/data/milestones"
-import { getAcademicYearStart, getCurrentGrade } from "@/lib/utils"
+import { getCurrentGrade } from "@/lib/utils"
 
 export async function completeOnboarding(formData: FormData) {
     const session = await auth()

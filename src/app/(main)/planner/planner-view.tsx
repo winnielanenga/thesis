@@ -70,14 +70,11 @@ interface PlannerViewProps {
     tasks: Task[];
     schoolYearStartMonth: number; // 0-11
     schoolYearStartDay: number;   // 1-31
-    schoolYearEndMonth: number;   // 0-11
-    schoolYearEndDay: number;     // 1-31
 }
 
 export function PlannerView({
     graduationYear, careerPath, tasks,
     schoolYearStartMonth, schoolYearStartDay,
-    schoolYearEndMonth, schoolYearEndDay,
 }: PlannerViewProps) {
     const hsStartYear = graduationYear - 4;
     const hsStartDate = new Date(hsStartYear, schoolYearStartMonth, schoolYearStartDay);
@@ -89,7 +86,6 @@ export function PlannerView({
     // academic year started this year; otherwise it started last year.
     const thisYearStart = new Date(now.getFullYear(), schoolYearStartMonth, schoolYearStartDay);
     const currentAcademicStartYear = now >= thisYearStart ? now.getFullYear() : now.getFullYear() - 1;
-    const currentGrade = Math.max(9, Math.min(12, 9 + (currentAcademicStartYear - hsStartYear)));
 
     const defaultDate = isBefore(now, hsStartDate)
         ? hsStartDate
@@ -209,8 +205,12 @@ export function PlannerView({
     const getWeeklyData = () => {
         const monthStart = startOfMonth(currentDate);
         const monthEnd = endOfMonth(currentDate);
-        let weeks = eachWeekOfInterval({ start: monthStart, end: monthEnd });
-        weeks = weeks.filter(w => !isBefore(endOfWeek(w), hsStartDate));
+        // Build weeks explicitly (same pattern as Monthly view) so date-fns can't
+        // surprise us, and so months that span HS start render their full grid.
+        const weeks: Date[] = [];
+        for (let w = startOfWeek(monthStart); w <= startOfWeek(monthEnd); w = addWeeks(w, 1)) {
+            weeks.push(w);
+        }
 
         return weeks.map((weekStart) => {
             const milestones = getMilestonesForWeek(weekStart);

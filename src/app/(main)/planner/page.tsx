@@ -39,8 +39,6 @@ export default async function PlannerPage() {
             tasks={(tasks ?? []) as Task[]}
             schoolYearStartMonth={schoolYear?.school_year_start_month ?? 8}
             schoolYearStartDay={schoolYear?.school_year_start_day ?? 1}
-            schoolYearEndMonth={schoolYear?.school_year_end_month ?? 5}
-            schoolYearEndDay={schoolYear?.school_year_end_day ?? 15}
         />
     );
 }
