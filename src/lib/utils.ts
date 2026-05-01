@@ -27,11 +27,23 @@ export function getCurrentSeason(): Season {
 }
 
 /** Returns the current grade level (9–12) given a graduation year, or null if
- *  the student hasn't started high school yet. */
-export function getCurrentGrade(graduationYear: number): 9 | 10 | 11 | 12 | null {
+ *  the student hasn't started high school yet. Switches to 9 seven days before
+ *  their first day so they can prep. */
+export function getCurrentGrade(
+  graduationYear: number,
+  schoolYearStartMonth = 7,
+  schoolYearStartDay = 1,
+): 9 | 10 | 11 | 12 | null {
   const academicYear = getAcademicYearStart()
   const grade = 12 - (graduationYear - academicYear - 1)
-  if (grade < 9) return null
+  if (grade < 9) {
+    const hsStartYear = academicYear + 1
+    const hsStart = new Date(hsStartYear, schoolYearStartMonth, schoolYearStartDay)
+    const now = new Date()
+    const msUntil = hsStart.getTime() - now.getTime()
+    if (msUntil <= 7 * 24 * 60 * 60 * 1000) return 9
+    return null
+  }
   return Math.min(12, grade) as 9 | 10 | 11 | 12
 }
 

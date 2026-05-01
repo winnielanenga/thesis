@@ -91,7 +91,7 @@ export async function reseedMilestones(userId: string, careerPath: CareerPath) {
         return
     }
 
-    // 2. Get graduation year to determine current grade
+    // 2. Get graduation year + school year start to determine current grade
     const { data: profile } = await supabase
         .from('profiles')
         .select('graduation_year')
@@ -100,7 +100,17 @@ export async function reseedMilestones(userId: string, careerPath: CareerPath) {
 
     if (!profile?.graduation_year) return
 
-    const currentGrade = getCurrentGrade(profile.graduation_year)
+    const { data: sy } = await supabase
+        .from('profiles')
+        .select('school_year_start_month, school_year_start_day')
+        .eq('id', userId)
+        .single()
+
+    const currentGrade = getCurrentGrade(
+        profile.graduation_year,
+        sy?.school_year_start_month ?? 7,
+        sy?.school_year_start_day ?? 1,
+    )
     const minGrade = currentGrade ?? 9
 
     // 3. Filter milestones for the new career path

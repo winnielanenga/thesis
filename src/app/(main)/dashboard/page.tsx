@@ -45,9 +45,19 @@ export default async function DashboardPage() {
     const dreamColleges: string[] = profile?.dream_colleges ?? [];
     const careerPath = profile?.career_path ?? "Undecided";
 
+    const { data: schoolYear } = await supabase
+        .from('profiles')
+        .select('school_year_start_month, school_year_start_day')
+        .eq('id', userId)
+        .single();
+
     const currentSeason = getCurrentSeason();
     const currentGrade = profile?.graduation_year
-        ? getCurrentGrade(profile.graduation_year)
+        ? getCurrentGrade(
+            profile.graduation_year,
+            schoolYear?.school_year_start_month ?? 7,
+            schoolYear?.school_year_start_day ?? 1,
+        )
         : null;
 
     // Auto-reseed milestones if user has a profile but no milestones at all

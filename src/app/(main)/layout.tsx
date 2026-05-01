@@ -69,12 +69,22 @@ export default async function MainLayout({
 
     const gradYear = profile.graduation_year;
 
+    const { data: schoolYear } = await supabase
+        .from('profiles')
+        .select('school_year_start_month, school_year_start_day')
+        .eq('id', session.user.id)
+        .single();
+
     // Build notifications from real data
     type Notification = { id: string; text: string; detail: string; type: 'milestone' | 'task' | 'essay' };
     const notifications: Notification[] = [];
 
     // Add critical milestones for the current grade + season only
-    const currentGrade = getCurrentGrade(gradYear);
+    const currentGrade = getCurrentGrade(
+        gradYear,
+        schoolYear?.school_year_start_month ?? 7,
+        schoolYear?.school_year_start_day ?? 1,
+    );
     const currentSeason = getCurrentSeason();
     (pendingMilestones ?? []).forEach((m: any) => {
         const template = m.milestone_template;

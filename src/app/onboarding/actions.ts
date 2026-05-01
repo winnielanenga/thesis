@@ -86,7 +86,7 @@ export async function completeOnboarding(formData: FormData) {
 
     // Seed milestones (non-fatal)
     try {
-        const currentGrade = getCurrentGrade(graduationYear)
+        const currentGrade = getCurrentGrade(graduationYear, start.month, start.day)
         const minGrade = currentGrade ?? 9
 
         // Filter milestones: grade >= current grade AND (path_tags empty OR includes careerPath)
