@@ -101,10 +101,11 @@ export async function reseedMilestones(userId: string, careerPath: CareerPath) {
     if (!profile?.graduation_year) return
 
     const currentGrade = getCurrentGrade(profile.graduation_year)
+    const minGrade = currentGrade ?? 9
 
     // 3. Filter milestones for the new career path
     const relevant = MILESTONES.filter(m => {
-        if (!m.grade_level || m.grade_level < currentGrade) return false
+        if (!m.grade_level || m.grade_level < minGrade) return false
         const tags = m.path_tags ?? []
         return tags.length === 0 || tags.includes(careerPath)
     })

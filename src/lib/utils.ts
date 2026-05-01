@@ -26,11 +26,13 @@ export function getCurrentSeason(): Season {
   return "Summer"                                   // Jun–Aug
 }
 
-/** Returns the current grade level (9–12) given a graduation year. */
-export function getCurrentGrade(graduationYear: number): 9 | 10 | 11 | 12 {
+/** Returns the current grade level (9–12) given a graduation year, or null if
+ *  the student hasn't started high school yet. */
+export function getCurrentGrade(graduationYear: number): 9 | 10 | 11 | 12 | null {
   const academicYear = getAcademicYearStart()
   const grade = 12 - (graduationYear - academicYear - 1)
-  return Math.max(9, Math.min(12, grade)) as 9 | 10 | 11 | 12
+  if (grade < 9) return null
+  return Math.min(12, grade) as 9 | 10 | 11 | 12
 }
 
 /**

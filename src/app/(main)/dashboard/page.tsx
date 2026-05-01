@@ -51,7 +51,7 @@ export default async function DashboardPage() {
         : null;
 
     // Auto-reseed milestones if user has a profile but no milestones at all
-    if (currentGrade && profile?.career_path) {
+    if (profile?.career_path) {
         const { count: totalCount } = await supabase
             .from('user_milestones')
             .select('*', { count: 'exact', head: true })

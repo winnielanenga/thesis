@@ -17,7 +17,7 @@ interface CollegeRoadmapProps {
 }
 
 export function CollegeRoadmap({ userPath, completionMap, graduationYear }: CollegeRoadmapProps) {
-    const [activeGrade, setActiveGrade] = useState(getCurrentGrade(graduationYear));
+    const [activeGrade, setActiveGrade] = useState(getCurrentGrade(graduationYear) ?? 9);
     const [localMap, setLocalMap] = useState(completionMap);
     const [isPending, startTransition] = useTransition();
     const { firework, sectionComplete } = useCelebration();
