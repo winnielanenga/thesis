@@ -62,15 +62,26 @@ export async function completeOnboarding(formData: FormData) {
             career_path: careerPath,
             target_gpa: targetGpa,
             dream_colleges: dreamColleges.length > 0 ? dreamColleges : null,
-            school_year_start_month: start.month,
-            school_year_start_day: start.day,
-            school_year_end_month: end.month,
-            school_year_end_day: end.day,
         })
 
     if (error) {
         console.error("Profile Error:", JSON.stringify(error, null, 2))
         throw new Error(`Failed to save profile: ${error.message} (code: ${error.code}, details: ${error.details})`)
+    }
+
+    // Save school year dates separately so a missing migration 010 doesn't
+    // block onboarding (the columns may not exist yet on this Supabase instance).
+    const { error: schoolYearError } = await supabase
+        .from('profiles')
+        .update({
+            school_year_start_month: start.month,
+            school_year_start_day: start.day,
+            school_year_end_month: end.month,
+            school_year_end_day: end.day,
+        })
+        .eq('id', userId)
+    if (schoolYearError) {
+        console.warn("School year fields not saved (run migration 010):", schoolYearError.message)
     }
 
     // Seed milestones (non-fatal)

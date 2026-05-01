@@ -27,6 +27,10 @@ export async function updateProfile(data: {
         }
         updateData.target_gpa = data.targetGpa
     }
+    // School year fields are written separately from the main update so a
+    // missing migration 010 (columns don't exist yet) doesn't break the
+    // whole settings save.
+    let schoolYearUpdate: Record<string, number> | null = null
     if (data.schoolYear) {
         const { startMonth, startDay, endMonth, endDay } = data.schoolYear
         if (startMonth < 0 || startMonth > 11 || endMonth < 0 || endMonth > 11) {
@@ -35,18 +39,32 @@ export async function updateProfile(data: {
         if (startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31) {
             throw new Error("School year days must be 1-31")
         }
-        updateData.school_year_start_month = startMonth
-        updateData.school_year_start_day = startDay
-        updateData.school_year_end_month = endMonth
-        updateData.school_year_end_day = endDay
+        schoolYearUpdate = {
+            school_year_start_month: startMonth,
+            school_year_start_day: startDay,
+            school_year_end_month: endMonth,
+            school_year_end_day: endDay,
+        }
     }
 
-    const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', userId)
+    if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('id', userId)
+        if (error) throw new Error(error.message)
+    }
 
-    if (error) throw new Error(error.message)
+    if (schoolYearUpdate) {
+        const { error: schoolYearError } = await supabase
+            .from('profiles')
+            .update(schoolYearUpdate)
+            .eq('id', userId)
+        if (schoolYearError) {
+            console.warn("School year fields not saved (run migration 010):", schoolYearError.message)
+            throw new Error("Couldn't save school year dates. Run migration 010 in Supabase, then try again.")
+        }
+    }
 
     // If career path changed, delete old milestones and re-seed
     if (data.careerPath) {
