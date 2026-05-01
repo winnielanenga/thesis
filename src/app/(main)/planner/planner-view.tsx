@@ -358,8 +358,10 @@ export function PlannerView({
                 {viewMode === 'Monthly' && (() => {
                     const monthStart = startOfMonth(currentDate);
                     const monthEnd = endOfMonth(currentDate);
-                    let weeks = eachWeekOfInterval({ start: monthStart, end: monthEnd });
-                    weeks = weeks.filter(w => !isBefore(endOfWeek(w), hsStartDate));
+                    const weeks = eachWeekOfInterval({ start: monthStart, end: monthEnd });
+                    // Don't filter out weeks before HS — per-day greying below handles
+                    // pre-HS visually, and filtering broke months that span the start
+                    // of HS (e.g. Aug if school starts Aug 31, only 1 of 6 weeks shown).
 
                     return (
                         <div className="h-full flex flex-col gap-4 overflow-y-auto">
