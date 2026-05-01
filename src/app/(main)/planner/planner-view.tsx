@@ -6,7 +6,7 @@ import {
     format, addMonths, subMonths, addWeeks, subWeeks, addDays,
     startOfWeek, endOfWeek, startOfMonth, endOfMonth,
     eachDayOfInterval, eachWeekOfInterval,
-    isSameMonth, isSameDay, isSameWeek, isBefore, isAfter, isWithinInterval,
+    isSameMonth, isSameDay, isSameWeek, isBefore, isWithinInterval,
 } from "date-fns";
 import { MILESTONES } from "@/data/milestones";
 import { CareerPath, Season, Task } from "@/types/database";
@@ -82,9 +82,6 @@ export function PlannerView({
     const hsStartYear = graduationYear - 4;
     const hsStartDate = new Date(hsStartYear, schoolYearStartMonth, schoolYearStartDay);
     const hsStartWeek = startOfWeek(hsStartDate);
-    // Senior year ends in the calendar year of graduation
-    const hsEndDate = new Date(graduationYear, schoolYearEndMonth, schoolYearEndDay);
-    const hsEndWeek = endOfWeek(hsEndDate);
 
     const now = new Date();
     // Decide which academic year today falls in, using the user's actual start date
@@ -198,11 +195,9 @@ export function PlannerView({
         if (!isBefore(candidate, hsStartWeek)) setCurrentDate(candidate);
     };
     const handleNext = () => {
-        const candidate = getStep('next');
-        if (!isAfter(candidate, hsEndWeek)) setCurrentDate(candidate);
+        setCurrentDate(getStep('next'));
     };
     const canGoPrev = !isBefore(getStep('prev'), hsStartWeek);
-    const canGoNext = !isAfter(getStep('next'), hsEndWeek);
 
     // HS week number
     const getHsWeekNumber = (date: Date) => {
@@ -306,7 +301,7 @@ export function PlannerView({
                             : format(currentDate, 'MMMM yyyy')
                         }
                     </div>
-                    <Button variant="outline" size="icon" onClick={handleNext} disabled={!canGoNext}>
+                    <Button variant="outline" size="icon" onClick={handleNext}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
