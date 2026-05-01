@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { differenceInDays, format, isPast, isToday } from "date-fns";
+import { CurrentDate } from "@/components/current-date";
 
 export default async function DashboardPage() {
     const session = await auth();
@@ -110,7 +111,7 @@ export default async function DashboardPage() {
                     <p className="text-muted-foreground">Welcome back to your command center.</p>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                    {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                    <CurrentDate />
                 </div>
             </div>
 
