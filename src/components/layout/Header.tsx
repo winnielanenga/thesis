@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -23,17 +23,56 @@ interface HeaderProps {
     userEmail?: string | null;
 }
 
+const DISMISSED_KEY = 'thesisprep-dismissed-notifications';
+
+function loadDismissed(): Set<string> {
+    if (typeof window === 'undefined') return new Set();
+    try {
+        const raw = localStorage.getItem(DISMISSED_KEY);
+        return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+}
+
+function saveDismissed(ids: Set<string>) {
+    try { localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids])); } catch {}
+}
+
 export function Header({ graduationYear, notifications = [], userName, userEmail }: HeaderProps) {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showMobileNav, setShowMobileNav] = useState(false);
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        setDismissed(loadDismissed());
+    }, []);
+
+    const currentIds = new Set(notifications.map(n => n.id));
+    useEffect(() => {
+        // Prune dismissed IDs that no longer match any active notification
+        setDismissed(prev => {
+            const pruned = new Set([...prev].filter(id => currentIds.has(id)));
+            if (pruned.size !== prev.size) saveDismissed(pruned);
+            return pruned;
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify([...currentIds])]);
+
+    const dismiss = useCallback((id: string) => {
+        setDismissed(prev => {
+            const next = new Set([...prev, id]);
+            saveDismissed(next);
+            return next;
+        });
+    }, []);
 
     const activeNotifications = notifications.filter(n => !dismissed.has(n.id));
     const unreadCount = activeNotifications.length;
     const userInitial = userName?.[0] ?? '?';
 
     const handleDismissAll = () => {
-        setDismissed(new Set(notifications.map(n => n.id)));
+        const allIds = new Set([...dismissed, ...notifications.map(n => n.id)]);
+        saveDismissed(allIds);
+        setDismissed(allIds);
         setShowNotifications(false);
     };
 
@@ -98,7 +137,7 @@ export function Header({ graduationYear, notifications = [], userName, userEmail
                                             <div
                                                 key={n.id}
                                                 className="p-4 border-b last:border-0 hover:bg-muted transition-colors cursor-pointer bg-primary/5"
-                                                onClick={() => setDismissed(prev => new Set([...prev, n.id]))}
+                                                onClick={() => dismiss(n.id)}
                                             >
                                                 <div className="flex items-start gap-3">
                                                     <div className={cn(
